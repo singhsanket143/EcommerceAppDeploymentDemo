@@ -24,25 +24,43 @@ function createOrder(req, res) {
                 if(order.length > 0) {
                     data.total = parseInt(order[0].total, 10) + parseInt(product[0].price, 10);
                     data.orderId = order[0].ID;
-                    OrderDetails.editOrder(data, function (err2, orderDetail) {
+                    OrderDetails.editOrder(data, async function (err2, orderDetail) {
                         if(err2) {
                             console.log("error in feditting order",err);
                             responseData.msg = "Error in creating the order";
                             return res.status(500).send(responseData);
                         }
-                        OrderItem.addOrderItem(data, function (err3, orderItem) {
-                            if(err3) {
-                                console.log("error in adding orderitem",err);
+                        if (product[0].addedToCart) {
+                            let quantity = await OrderItem.getProductQuantityInCart(data);
+                            data.quantity += quantity;
+                            OrderItem.editOrderItem(data, function (err3, orderItem) {
+                              if (err3) {
+                                console.log("error in adding orderitem", err);
                                 responseData.msg = "Error in creating the order";
                                 return res.status(500).send(responseData);
-                            }
-                            responseData.msg = "Successfully created an order";
-                            responseData.success = true;
-                            responseData.orderDetails = {
-                                orderId: order[0].ID
-                            }
-                            return res.status(200).send(responseData);
-                        })
+                              }
+                              responseData.msg = "Successfully created an order";
+                              responseData.success = true;
+                              responseData.orderDetails = {
+                                orderId: order[0].ID,
+                              };
+                              return res.status(200).send(responseData);
+                            });
+                          } else {
+                            OrderItem.addOrderItem(data, function (err4, orderItem) {
+                              if (err4) {
+                                console.log("error in adding orderitem", err);
+                                responseData.msg = "Error in creating the order";
+                                return res.status(500).send(responseData);
+                              }
+                              responseData.msg = "Successfully created an order";
+                              responseData.success = true;
+                              responseData.orderDetails = {
+                                orderId: order[0].ID,
+                              };
+                              return res.status(200).send(responseData);
+                            });
+                          }
                     });
                 } else {
                     data.total = parseInt(product[0].price, 10);
