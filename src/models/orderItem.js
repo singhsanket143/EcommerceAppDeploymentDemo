@@ -19,7 +19,7 @@ function editOrderItem(data, cb) {
                 OrderId = ? AND ProductID = ?`;
 
     var values = [];
-    values.push(data.quanitity);
+    values.push(data.quantity);
     values.push(data.orderId);
     values.push(data.productId);
     sqlConnection.executeQuery(sql, values, function(err, result) {
