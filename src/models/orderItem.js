@@ -51,4 +51,26 @@ function getOrderItems(data, cb) {
     });
 }
 
-module.exports = {addOrderItem, getOrderItems, editOrderItem, deleteOrderItem};
+function getProductQuantityInCart(data) {
+    return new Promise((resolve, reject) => {
+      let sql = `SELECT oi.Quantity as quantity
+                from OrderDetails od join OrderItems oi on od.ID = oi.OrderID
+                join Products p on p.ID = oi.ProductID 
+                join Users u on u.ID = od.UserID
+                where u.ID = ? and od.ID = ?;
+      `;
+  
+      let values = [];
+      values.push(data.userId);
+      values.push(data.orderId);
+      sqlConnection.executeQuery(sql, values, function (err, result) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result[0].quantity);
+        }
+      });
+    });
+  }
+
+module.exports = {addOrderItem, getOrderItems, editOrderItem, deleteOrderItem, getProductQuantityInCart};
